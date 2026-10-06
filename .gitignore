@@ -1,0 +1,9 @@
+# 无运行时依赖；只管开发期与生成物。
+node_modules
+
+# gx 生成物（见 _gal/），不入库。
+.report
+.run*
+
+*.tsbuildinfo
+.DS_Store

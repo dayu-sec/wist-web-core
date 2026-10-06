@@ -1,0 +1,43 @@
+{
+  "name": "@dayu-sec/wist-web-core",
+  "version": "0.1.0",
+  "description": "wist 前端共用的纯口径（无运行时依赖、不含 React）：发布计划的灰度阶梯与状态、制品来源的版本解析。权威口径在 Rust 侧 wist-release / wist-center。",
+  "type": "module",
+  "license": "Apache-2.0",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./release": {
+      "types": "./src/release/index.d.ts",
+      "default": "./src/release/index.js"
+    },
+    "./artifact": {
+      "types": "./src/artifact/index.d.ts",
+      "default": "./src/artifact/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dayu-sec/wist-web-core.git"
+  }
+}

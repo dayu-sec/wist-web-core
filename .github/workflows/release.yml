@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: read
+
+jobs:
+  # 打标签前先校验：测试与类型必须全过。tag 推送不触发 ci.yml，所以这里要再跑一遍。
+  verify:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Test (behavior)
+        run: npm test
+
+      - name: Test (types)
+        run: npm run check-types
+
+  # 本包**不发 registry**（消费方按 tag 从 git 装）。这里出的是 GitHub Release + 一个 `.tgz`：
+  # 前者给 `npm i github:dayu-sec/wist-web-core#vX.Y.Z`，后者给 `npm i <release 里的 tgz 地址>`。
+  release:
+    needs: [verify]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Pack tarball
+        run: npm pack
+
+      - uses: softprops/action-gh-release@v3
+        with:
+          name: ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: "*.tgz"

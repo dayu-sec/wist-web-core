@@ -1,0 +1,24 @@
+extern mod vfm { path = "@{PATH}"; }
+
+mod  envs {
+  env default {
+     ROOT= "./";
+  }
+}
+mod main   : lib_ver_adm {
+
+#[auto_load(entry)]
+  flow _entry : ver.use {
+  }
+
+  // 组件（库）：只在 main，`v_patch`/`v_feat` 升版本，`tag_stable` 打 `vX.Y.Z`。
+  //
+  // 版本落进 package.json。package.json 是严格 JSON，装不下 `#@gxl:set(version)` 注释
+  // （注释会让 npm / Vite 解析失败），所以不走 `ver.syn_file` 打点改行，而是 JSON 安全写入：
+  // 退出钩子把 version.txt 的版本同步进 package.json（脚本见 _gal/sync_version.mjs）。
+  #[auto_load(exit)]
+  flow _set_ver {
+    gx.ver ( file : "${GXL_START_ROOT}/version.txt" , inc : "null" );
+    gx.cmd ( "node ${GXL_START_ROOT}/_gal/sync_version.mjs ${GXL_START_ROOT}/package.json ${VERSION}" );
+  }
+}

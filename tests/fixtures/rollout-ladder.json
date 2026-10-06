@@ -1,0 +1,28 @@
+{
+  "_doc": "与 Rust 权威 wist-release::rollout 的测试同钉（available_phase_counts_shrink_with_the_target_size / cuts_follow_the_ladder_and_cover_everything_once / small_fleets_stay_non_empty_and_single_target_is_not_a_canary / phases_are_disjoint_and_ordered）。改阶梯时以 Rust 为准，两边测试一起改。",
+  "availablePhaseCounts": [
+    { "total": 10, "counts": [2, 3, 4, 5] },
+    { "total": 3, "counts": [2, 3] },
+    { "total": 1, "counts": [1] },
+    { "total": 0, "counts": [] }
+  ],
+  "phaseSizes": [
+    { "targets": 10, "phaseCount": 2, "sizes": [1, 9] },
+    { "targets": 10, "phaseCount": 3, "sizes": [1, 1, 8] },
+    { "targets": 10, "phaseCount": 4, "sizes": [1, 1, 1, 7] },
+    { "targets": 10, "phaseCount": 5, "sizes": [1, 1, 1, 4, 3] },
+    { "targets": 5, "phaseCount": 5, "sizes": [1, 1, 1, 1, 1] },
+    { "targets": 3, "phaseCount": 3, "sizes": [1, 1, 1] },
+    { "targets": 1, "phaseCount": 1, "sizes": [1] }
+  ],
+  "tenAtFive": {
+    "firstPhaseTargetIds": ["gw-001"],
+    "firstPhaseIsCanary": true,
+    "firstPhaseIsFinal": false,
+    "thirdPhaseCoveragePercent": 30
+  },
+  "singleTarget": {
+    "isCanary": false,
+    "isFinal": true
+  }
+}
