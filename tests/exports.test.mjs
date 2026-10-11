@@ -9,10 +9,14 @@ test("按包名与其子路径都能解析到", async () => {
   const root = await import("@dayu-sec/wist-web-core");
   const release = await import("@dayu-sec/wist-web-core/release");
   const artifact = await import("@dayu-sec/wist-web-core/artifact");
+  const auth = await import("@dayu-sec/wist-web-core/auth");
 
   assert.equal(typeof root.planPhases, "function");
   assert.equal(typeof root.versionFromArtifactUrl, "function");
   assert.equal(typeof release.planPhases, "function");
   assert.equal(typeof release.filterRolloutPlans, "function");
   assert.equal(typeof artifact.versionFromArtifactUrl, "function");
+  assert.equal(typeof auth.createAdminAuth, "function");
+  assert.equal(typeof auth.AdminApiError, "function");
+  assert.equal(typeof auth.readAdminApiError, "function");
 });

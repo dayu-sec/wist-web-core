@@ -3,14 +3,61 @@
 wist 前端（`wist-center-web` / `wist-gateway-web`）共用的**纯口径**。零运行时依赖、不含 React、
 不含 fetch —— 只有能在浏览器与 Node 里同样跑、能脱离框架单测的纯函数。
 
+## 双语（i18n）
+
+```js
+import { setLocale, getLocale, pickLabel, pickTemplate } from "@dayu-sec/wist-web-core/i18n";
+
+setLocale("en");                     // "zh"（默认）| "en"；认不出的值忽略
+planStatusLabel("rolling");          // → "Rolling out"（"zh" 时 → "灰度中"）
+pickLabel("已接入", "Enrolled");      // 二选一取词
+pickTemplate("已选 {n} 台", "{n} selected", { n: 3 });
+```
+
+- **默认 `zh`**：不调 `setLocale` 的调用方，行为与 0.1.0 完全一致（导出的 `*_LABEL` 表保持 zh 原文）。
+- 语言是**模块级状态**，不自动触发重渲染：各 app 调 `setLocale` 后自己重渲染（本包不含 React）。
+- 随语言变的：计划 / 阶段 / 条目状态、推进闸门文案、阶段规模文字、`planPhases` 的错误串、
+  `planStatusFilters()` / `planTimeRanges()`。
+- 页面里若直接用 `tracking` 的 `PLAN_STATUS_FILTERS` / `PLAN_TIME_RANGES` 数组（zh 原文表），
+  改用同名函数版即可拿到当前语言（值不变、只换文案）。
+
+## 管理面鉴权机制（admin token）
+
+两个前端的 `src/api/admin.ts` 里，「token 存哪 / 怎么发 Bearer / 401 与 429 怎么判 /
+`{error:{code,message}}` 信封怎么拆」是**逐字相同**的一份；差异只有 storage key 与事件名。
+这里收敛成一份，差异参数化：
+
+```js
+import {
+  createAdminAuth,
+  AdminApiError,
+  isRateLimitedError,
+  isUnauthorizedError,
+  readAdminApiError,
+} from "@dayu-sec/wist-web-core/auth";
+
+const auth = createAdminAuth({
+  storageKey: "warpInsightAdminApiToken",          // 中心：warpInsightCenterApiToken
+  authChangedEvent: "warpInsightAdminAuthChanged", // 中心：warpInsightCenterAuthChanged
+});
+auth.setAdminApiToken("…");   // 存 sessionStorage + 在 window 上派发变更事件
+```
+
+- **只抽机制，不抽客户端**：端点函数、视图类型、`requestJson` 的实作（超时 / 重试 / 示例回落）
+  仍留在各 app —— 那些绑的是不同服务。
+- `AdminApiError` 是统一错误类型（`status` / `code` / `detail` / `retryAfterSeconds`）；
+  `readAdminApiError(response)` 解后端信封（只用到 `text()`，与 `Response` 结构兼容）。
+- 不含 fetch、不含 React；`window` / `sessionStorage` 用 `typeof window` 兜底，故也能在 Node 里 import 与单测。
+
 ## 它是什么、不是什么
 
 **是**：两个前端里**同一套口径**的实作。原先它们各存一份、注释里写着「改一处要改两处」，
 现在收敛到这里一份，测试随包走。
 
-**不是**：React 组件、页面、API 客户端、以及各 app 绑定的视图类型。那些绑的是**不同的服务**
-（中心的 admin API vs 网关的 admin API）和**不同的实体**（网关实例 vs 子系统 Agent），共享它们会把
-两个可独立发布的产物耦死。
+**不是**：React 组件、页面、各服务的 **API 客户端**（端点函数、视图类型），以及各 app 绑定的实体
+（网关实例 vs 子系统 Agent）。那些绑的是**不同的服务**，共享它们会把两个可独立发布的产物耦死。
+但**鉴权机制**这类与「哪个服务」无关的部分（token 存取、Bearer 注入口径、401 / 429 归类、
+错误信封解析）是共享的（见 `./auth`）—— 两条线别混。
 
 ## 权威在 Rust 侧，本包只做预览
 
@@ -30,6 +77,7 @@ src/release/phases.js    灰度阶梯与阶段切分（plan_phases 的前端实�
 src/release/status.js    计划 / 阶段 / 逐目标条目 的状态口径（label + tone + 计数 + 推进闸门）
 src/release/filters.js   计划列表筛选：状态分页 + 按本地日历的时间窗
 src/artifact/version.js  从制品来源（URL / 路径）粗解析版本号
+src/auth/index.js        管理面 token 的存取 / 变更通知 + 统一错误类型 / 401·429 归类 / 信封解析
 ```
 
 ## 怎么装（本包不发 registry）

@@ -1,3 +1,5 @@
+import { pickLabel, pickTemplate } from "../i18n.js";
+
 /**
  * 灰度阶段的分法（前端**预览**口径）。
  *
@@ -60,12 +62,22 @@ export function planPhases(targetIds, phaseCount) {
   const total = targetIds.length;
   const order = [...targetIds].sort();
   if (total === 0) {
-    return { phases: [], error: "还没有可选目标，无法分配阶段。" };
+    return {
+      phases: [],
+      error: pickLabel(
+        "还没有可选目标，无法分配阶段。",
+        "No targets selected yet, so phases cannot be assigned.",
+      ),
+    };
   }
   if (phaseCount > total) {
     return {
       phases: [],
-      error: `只有 ${total} 个目标，分不出 ${phaseCount} 个非空阶段。`,
+      error: pickTemplate(
+        "只有 {total} 个目标，分不出 {phaseCount} 个非空阶段。",
+        "Only {total} target(s): cannot split them into {phaseCount} non-empty phases.",
+        { total, phaseCount },
+      ),
     };
   }
 
@@ -101,6 +113,7 @@ export function planPhases(targetIds, phaseCount) {
 
 /** 阶段的规模文字：金丝雀读「1 个」，其余读「覆盖 ~X%」（X 是阶梯上的那一级）。 */
 export function phaseScaleLabel(phase) {
-  if (phase.isCanary) return "1 个（金丝雀）";
-  return `覆盖 ~${Math.round((phase.coverage ?? 0) * 100)}%`;
+  if (phase.isCanary) return pickLabel("1 个（金丝雀）", "1 target (canary)");
+  const percent = Math.round((phase.coverage ?? 0) * 100);
+  return pickTemplate("覆盖 ~{percent}%", "~{percent}% coverage", { percent });
 }

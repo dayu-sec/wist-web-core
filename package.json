@@ -1,6 +1,6 @@
 {
   "name": "@dayu-sec/wist-web-core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "wist 前端共用的纯口径（无运行时依赖、不含 React）：发布计划的灰度阶梯与状态、制品来源的版本解析。权威口径在 Rust 侧 wist-release / wist-center。",
   "type": "module",
   "license": "Apache-2.0",
@@ -18,7 +18,15 @@
       "types": "./src/artifact/index.d.ts",
       "default": "./src/artifact/index.js"
     },
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./i18n": {
+      "types": "./src/i18n.d.ts",
+      "default": "./src/i18n.js"
+    },
+    "./auth": {
+      "types": "./src/auth/index.d.ts",
+      "default": "./src/auth/index.js"
+    }
   },
   "files": [
     "src",

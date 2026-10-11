@@ -1,3 +1,5 @@
+import { pickLabel } from "../i18n.js";
+
 /**
  * 升级计划列表的筛选口径：按**状态**分页 + 按**时间窗**收窄。
  *
@@ -6,7 +8,7 @@
  * 把结果铺出去；口径集中在这一处，测试也钉在这里。
  */
 
-/** 状态分页：成功 = 计划的 `completed`，进行中 = `rolling`，失败 = `failed`。 */
+/** 状态分页：成功 = 计划的 `completed`，进行中 = `rolling`，失败 = `failed`。**zh 原文表**。 */
 export const PLAN_STATUS_FILTERS = [
   { value: "all", label: "全部" },
   { value: "rolling", label: "进行中" },
@@ -111,3 +113,37 @@ export function filterRolloutPlans(plans, filters, now) {
       matchesPlanTimeRange(plan.createdAt, filters.timeRange, now),
   );
 }
+
+
+/**
+ * 状态分页选项（**按当前语言**）：`PLAN_STATUS_FILTERS` 是 zh 原文表，这个函数给双语版。
+ * 页面上用它（`planStatusFilters().map(...)`），值不变、只换文案。
+ */
+export function planStatusFilters() {
+  return PLAN_STATUS_FILTERS.map((option) => ({
+    value: option.value,
+    label: pickLabel(option.label, PLAN_STATUS_FILTER_LABEL_EN[option.value] ?? option.label),
+  }));
+}
+
+/** 时间窗选项（**按当前语言**）：同上。 */
+export function planTimeRanges() {
+  return PLAN_TIME_RANGES.map((option) => ({
+    value: option.value,
+    label: pickLabel(option.label, PLAN_TIME_RANGE_LABEL_EN[option.value] ?? option.label),
+  }));
+}
+
+const PLAN_STATUS_FILTER_LABEL_EN = {
+  all: "All",
+  rolling: "Rolling out",
+  succeeded: "Succeeded",
+  failed: "Failed",
+};
+
+const PLAN_TIME_RANGE_LABEL_EN = {
+  all: "All time",
+  this_week: "This week",
+  last_week: "Last week",
+  this_month: "This month",
+};

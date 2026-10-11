@@ -16,6 +16,18 @@ export declare const PLAN_TIME_RANGES: readonly {
   label: string;
 }[];
 
+/** 状态分页选项（**按当前语言**）：值不变、只换文案。 */
+export declare function planStatusFilters(): readonly {
+  value: PlanStatusFilter;
+  label: string;
+}[];
+
+/** 时间窗选项（**按当前语言**）：值不变、只换文案。 */
+export declare function planTimeRanges(): readonly {
+  value: PlanTimeRange;
+  label: string;
+}[];
+
 /** 某个计划状态是否落在选中的状态分页里（`all` 恒真）。 */
 export declare function matchesPlanStatus(
   status: string,

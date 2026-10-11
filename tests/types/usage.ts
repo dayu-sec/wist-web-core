@@ -28,6 +28,15 @@ import {
   type RolloutCounts,
   type RolloutTone,
 } from "../../src/index.js";
+import {
+  AdminApiError,
+  createAdminAuth,
+  isRateLimitedError,
+  isUnauthorizedError,
+  readAdminApiError,
+  type AdminAuth,
+  type CreateAdminAuthOptions,
+} from "../../src/auth/index.js";
 
 // 各 app 自己的视图类型（这里给出最小形状，验证结构化输入能被接住）。
 interface PhaseView {
@@ -110,4 +119,33 @@ export function exerciseTypes(
     filtered,
     version,
   };
+}
+
+/** 管理 token 机制（`./auth`）的用法自洽检查。 */
+export function exerciseAuth(): Promise<{ code?: string; detail?: string }> {
+  const options: CreateAdminAuthOptions = {
+    storageKey: "warpInsightAdminApiToken",
+    authChangedEvent: "warpInsightAdminAuthChanged",
+  };
+  const auth: AdminAuth = createAdminAuth(options);
+
+  const token: string | null = auth.getAdminApiToken();
+  void token;
+  auth.setAdminApiToken("token");
+  auth.clearAdminApiToken();
+  const eventName: string = auth.authChangedEvent;
+  void eventName;
+
+  const error = new AdminApiError(429, "/x", {
+    code: "too_many_requests",
+    detail: "blocked",
+    retryAfterSeconds: 60,
+  });
+  const status: number = error.status;
+  void status;
+  const classified: boolean =
+    isRateLimitedError(error) || isUnauthorizedError(error);
+  void classified;
+
+  return readAdminApiError({ text: async () => '{"error":{"code":"c","message":"m"}}' });
 }

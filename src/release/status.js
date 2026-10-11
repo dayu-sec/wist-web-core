@@ -1,3 +1,5 @@
+import { isEnglish, pickLabel, pickTemplate } from "../i18n.js";
+
 /**
  * 灰度发布计划的状态呈现口径（页面与契约测试共用一份，避免两处各写一套判断）。
  *
@@ -8,7 +10,7 @@
  * 的视图类型：两个 app 的 `RolloutPlanView` 之类只要形状对得上就能直接喂进来。
  */
 
-/** 计划整体状态（模型 `RolloutPlan.status`）。 */
+/** 计划整体状态（模型 `RolloutPlan.status`）。**zh 原文表**（导出保持原样，兼容老调用方）。 */
 export const PLAN_STATUS_LABEL = {
   draft: "草稿（待批准）",
   rolling: "灰度中",
@@ -17,8 +19,18 @@ export const PLAN_STATUS_LABEL = {
   canceled: "已取消",
 };
 
+/** 英文表；键与 zh 表一一对应。 */
+const PLAN_STATUS_LABEL_EN = {
+  draft: "Draft (awaiting approval)",
+  rolling: "Rolling out",
+  completed: "Completed",
+  failed: "Failed",
+  canceled: "Canceled",
+};
+
 export function planStatusLabel(status) {
-  return PLAN_STATUS_LABEL[status] ?? status;
+  const table = isEnglish() ? PLAN_STATUS_LABEL_EN : PLAN_STATUS_LABEL;
+  return table[status] ?? status;
 }
 
 export function planStatusTone(status) {
@@ -42,8 +54,16 @@ export const PHASE_STATUS_LABEL = {
   completed: "已完成",
 };
 
+/** 英文表；键与 zh 表一一对应。 */
+const PHASE_STATUS_LABEL_EN = {
+  pending: "Not started",
+  rolling: "In progress",
+  completed: "Completed",
+};
+
 export function phaseStatusLabel(status) {
-  return PHASE_STATUS_LABEL[status] ?? status;
+  const table = isEnglish() ? PHASE_STATUS_LABEL_EN : PHASE_STATUS_LABEL;
+  return table[status] ?? status;
 }
 
 export function phaseStatusTone(status) {
@@ -69,8 +89,17 @@ export const ENTRY_STATUS_LABEL = {
   failed: "失败",
 };
 
+/** 英文表；键与 zh 表一一对应。 */
+const ENTRY_STATUS_LABEL_EN = {
+  pending: "Awaiting dispatch",
+  dispatched: "In progress",
+  succeeded: "Succeeded",
+  failed: "Failed",
+};
+
 export function entryStatusLabel(status) {
-  return ENTRY_STATUS_LABEL[status] ?? status;
+  const table = isEnglish() ? ENTRY_STATUS_LABEL_EN : ENTRY_STATUS_LABEL;
+  return table[status] ?? status;
 }
 
 export function entryStatusTone(status) {
@@ -97,14 +126,30 @@ export function isEntrySettled(status) {
  * 新活，只是把计划收尾，所以它全部了结后会**自动**收敛为 completed（不看闸门）。
  */
 export function advanceRuleLabel(rule, isLastPhase = false) {
-  if (isLastPhase) return "末阶段：全部了结后自动收尾";
+  if (isLastPhase) {
+    return pickLabel(
+      "末阶段：全部了结后自动收尾",
+      "Last phase: converges automatically once every target settles",
+    );
+  }
   const text = rule.trim();
-  if (text === "manual") return "人工确认后推进";
-  if (text === "all_succeeded") return "本阶段全部成功自动推进";
+  if (text === "manual") return pickLabel("人工确认后推进", "Advances after a human confirms");
+  if (text === "all_succeeded") {
+    return pickLabel(
+      "本阶段全部成功自动推进",
+      "Advances automatically when every target in the phase succeeds",
+    );
+  }
   const prefix = "success_rate:";
   if (text.startsWith(prefix)) {
     const rate = text.slice(prefix.length).trim();
-    if (/^\d+$/.test(rate)) return `本阶段成功率 ≥ ${rate}% 自动推进`;
+    if (/^\d+$/.test(rate)) {
+      return pickTemplate(
+        "本阶段成功率 ≥ {rate}% 自动推进",
+        "Advances automatically once the phase success rate reaches {rate}%",
+        { rate },
+      );
+    }
   }
   return text || "—";
 }
